@@ -1,8 +1,6 @@
 package com.tolik3.echoserver.server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -15,16 +13,19 @@ public class Server {
 
         try (ServerSocket serverSocket = new ServerSocket(3000);
              Socket socket = serverSocket.accept();
-             OutputStream outputStream = socket.getOutputStream();
-             InputStream inputStream = socket.getInputStream();) {
+             PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+             InputStream inputStream = socket.getInputStream();
+             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
 
-            outputStream.write((ANSI_YELLOW + "You are successfully connected to the server!" + ANSI_RESET).getBytes());
+            printWriter.println(ANSI_YELLOW + "You are successfully connected to the server!" + ANSI_RESET);
 
             while (true) {
-                byte[] buffer = new byte[100];
-                int readBytes = inputStream.read(buffer);
-                String messageWithPrefix = "ECHO-" + new String(buffer, 0, readBytes);
-                outputStream.write(messageWithPrefix.getBytes());
+                if (inputStream.available() > 0) {
+                    String clientMessage = bufferedReader.readLine();
+                    System.out.println("Client message: " + clientMessage);
+                    String messageWithPrefix = "ECHO-" + clientMessage;
+                    printWriter.println(messageWithPrefix);
+                }
             }
         }
     }

@@ -9,25 +9,22 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
 
-        byte[] buffer = new byte[100];
-
         try (Socket socket = new Socket("localhost", 3000);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-             InputStream inputStream = socket.getInputStream();
-             OutputStream outputStream = socket.getOutputStream();) {
+             BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
+             InputStream serverInputStream = socket.getInputStream();
+             BufferedReader serverReader = new BufferedReader(new InputStreamReader(serverInputStream));
+             PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);) {
 
-            int readBytes = inputStream.read(buffer); //read info from server about successfully connection
-            System.out.println(new String(buffer, 0, readBytes));
+            String serverConnectionMessage = serverReader.readLine(); //read info from server about successfully connection
+            System.out.println(serverConnectionMessage);
 
             while (true) {
                 System.out.println("Please type your message:");
-
-                String typedMessage = reader.readLine();
-                outputStream.write(typedMessage.getBytes());
-
-                readBytes = inputStream.read(buffer);
+                String typedMessage = consoleReader.readLine();
+                printWriter.println(ANSI_GREEN + typedMessage + ANSI_RESET);
+                String serverMessage = serverReader.readLine();
                 System.out.println("Message received from server:");
-                System.out.println(ANSI_GREEN + new String(buffer, 0, readBytes) + ANSI_RESET);
+                System.out.println(ANSI_GREEN + serverMessage + ANSI_RESET);
             }
         }
     }
